@@ -1,1 +1,1 @@
-This is the study group for Renato and Pietro.
+This is the IoT study group for Renato and Pietro.
