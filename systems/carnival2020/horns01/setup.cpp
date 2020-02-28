@@ -8,7 +8,7 @@ const int frame_count_base = 100;
 // vars for tie
 enum anim_type {anim_none, anim_dots, anim_rainbow,
             anim_scroll, anim_fade_out, anim_lightning,
-            anim_pump_in, anim_pump_out};
+            anim_pump_in, anim_pump_out, anim_meter};
 anim_type anim_current = anim_none;
 int anim_frames = 0;
 uint32_t idle_counter = 0;
@@ -30,6 +30,7 @@ animator(anim, IN(matrix))
             int virtual_count;
             int virtual_pos;
             int x, y;
+            int l;
 			case anim_dots:
                 virtual_count = 6 + 2 * strip_len;
                 virtual_pos = ((frame_count_base - anim_frames) 
@@ -57,7 +58,7 @@ animator(anim, IN(matrix))
                 break;
             case anim_lightning:
                 if(anim_frames > frame_count_base / 10) {
-                    int l = (frame_count_base - anim_frames) * 8 * strip_len / frame_count_base; 
+                    l = (frame_count_base - anim_frames) * 8 * strip_len / frame_count_base; 
                     if(l > strip_len) l = strip_len;
                     for(int i=0; i<l; i++) {
                         int r = urandom(0,2);
@@ -67,6 +68,21 @@ animator(anim, IN(matrix))
                 } else {
                     anim_current = anim_fade_out;
                     IN(matrix).black();
+                }
+                break;
+            case anim_meter:
+                    l = ((frame_count_base - anim_frames) + strip_len - 1) / strip_len; 
+                    if(l > strip_len) l = strip_len;
+                    for(int i=0; i<strip_len; i++) {
+                        if(l>i){
+                            IN(matrix).set_pixel(0,i,CRGB::Red);
+                            IN(matrix).set_pixel(1,i,CRGB::Red);
+                        }
+                        
+                        else {
+                            IN(matrix).set_pixel(0,i,CRGB::White);
+                            IN(matrix).set_pixel(1,i,CRGB::White);
+                    }
                 }
                 break;
             case anim_pump_in:
@@ -146,6 +162,10 @@ animator(anim, IN(matrix))
     } )
     .with_command_handler( "lightning", [&] (Ustring& command) {
         anim_current = anim_lightning;
+        anim_frames = frame_count_base;
+    } )
+    .with_command_handler( "meter", [&] (Ustring& command) {
+        anim_current = anim_meter;
         anim_frames = frame_count_base;
     } )
     .with_command_handler( "pump", [&] (Ustring& command) {
